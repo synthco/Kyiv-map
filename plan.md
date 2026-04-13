@@ -4,6 +4,7 @@
 - Проєкт базується на шаблоні [`synthco/Kyiv-map`](https://github.com/synthco/Kyiv-map) і використовує TypeScript/Vite workflow для Subway Builder Modding API v1.0.0.
 - Робочий цикл репозиторію: `pnpm build` збирає мод у `dist/`, `pnpm dev:link` лінкує `dist/` у папку модів гри, `pnpm dev` запускає watcher і гру з логами, `pnpm typecheck` перевіряє типи.
 - Канонічні джерела рішень по API: тільки офіційна документація Subway Builder v1.0.0, насамперед `Custom Cities Guide`, `Development Tools`, `First Mod`, `Electron Setup`, `Lifecycle Hooks`, `Type Reference`.
+- Канонічний контракт геоданих для ETL і runtime зафіксовано в `GEO_DATA_CONTRACT.md`.
 - Scope v1: один playable city-pack `KYV` для регіону Kyiv Metropolitan Area без місій, flavor-контенту та необов'язкового UI.
 
 ## Repository Baseline
@@ -18,6 +19,7 @@
 - `build/`: проміжні ETL-артефакти і результати підготовки даних.
 - `generated/`: згенеровані city-data артефакти перед пакуванням або сервінгом.
 - `dist/`: тільки фінальний mod output для Subway Builder, без ручних правок.
+- `GEO_DATA_CONTRACT.md`: канонічний контракт для `raw -> normalized -> generated -> served` артефактів.
 
 ## Implementation Phases
 
@@ -35,12 +37,13 @@
 
 ### 3. Geodata ETL
 - Завантажити сирі OSM/open-data в `data-src/`.
-- Зафіксувати регіональний extent, який гарантовано включає Київ, Бориспіль, Бровари та Вишгород.
-- Підготувати геометрію будівель, доріг, landuse і аеропортової інфраструктури.
+- Зафіксувати прямокутний bbox extent `[30.095930481829672, 50.24450228086875, 31.03257386656265, 50.6325759924907]`.
+- Використовувати settlement inclusion set з `GEO_DATA_CONTRACT.md` як нижню межу покриття для першого production extent.
+- Підготувати геометрію будівель, доріг, landuse і аеропортової інфраструктури згідно з `GEO_DATA_CONTRACT.md`.
 
 ### 4. Demand Model
 - Побудувати `demand_data.json.gz` на базі реальних open-data + OSM.
-- Рознести `jobs` і `residents` по demand points з явною фіксацією джерел і припущень.
+- Рознести `jobs` і `residents` по clustered demand points з явною фіксацією джерел і припущень.
 - Рахувати `drivingSeconds` і `drivingDistance` через локальний OSRM.
 
 ### 5. Tile Serving
@@ -50,7 +53,7 @@
 
 ### 6. Validation
 - Ганяти `pnpm typecheck` для TypeScript шару.
-- Валідовувати `demand_data`, `buildings_index`, `roads`, `runways_taxiways` через documented schemas.
+- Валідовувати `demand_data`, `buildings_index`, `roads`, `runways_taxiways` через documented schemas і вимоги `GEO_DATA_CONTRACT.md`.
 - Записувати всі schema mismatch та runtime issues в `CONTINUITY.md`.
 
 ### 7. Playtesting
@@ -67,7 +70,7 @@
 - `Template Cleanup`: оновлені `manifest.json`, `package.json`, `src/main.ts`; прибраний demo UI.
 - `City Runtime`: runtime реєструє `KYV` і знає URL-и тайлів та city data.
 - `Geodata ETL`: сирі джерела в `data-src/`, зафіксований bbox, підготовлені проміжні файли в `build/`.
-- `Demand Model`: валідний або близький до валідного `demand_data.json.gz` у `generated/`.
+- `Demand Model`: валідний або близький до валідного `demand_data.json.gz` у `generated/`, побудований з clustered demand points.
 - `Tile Serving`: локальний endpoint віддає tiles і gzip-дані, runtime може їх читати.
 - `Validation`: задокументовані результати `typecheck`, schema validation і runtime smoke tests.
 - `Playtesting`: зафіксовані сценарії відтворення і знайдені проблеми.
@@ -78,5 +81,6 @@
 - Місто `KYV` доступне в city picker і відкривається з коректним стартовим видом на Київський регіон.
 - Runtime читає локальні тайли та city data з `127.0.0.1`.
 - `DemandDataSchema`, `OptimizedBuildingIndexSchema`, `RoadsGeojsonSchema`, `RunwaysTaxiwaysSchema` проходять або мають задокументовані відхилення.
+- Усі generated і served геодані відповідають `GEO_DATA_CONTRACT.md`.
 - `pnpm typecheck` і `pnpm build` проходять.
 - Усі нові питання, блокери, джерела даних і результати перевірок зафіксовані в `CONTINUITY.md`.
