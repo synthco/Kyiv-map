@@ -1,7 +1,7 @@
 {
-  "name": "my-subway-mod",
+  "name": "kyiv-city",
   "version": "1.0.0",
-  "description": "A mod for Subway Builder",
+  "description": "Kyiv Metropolitan Area mod for Subway Builder",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
     "subway-builder",
     "mod"
   ],
-  "author": "Your Name",
+  "author": "Ivan Tyshchenko",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^25.0.9",

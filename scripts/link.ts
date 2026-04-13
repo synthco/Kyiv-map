@@ -3,7 +3,7 @@
  */
 
 import { existsSync, mkdirSync, symlinkSync, unlinkSync, lstatSync, readFileSync } from 'fs';
-import { join, basename } from 'path';
+import { join, resolve } from 'path';
 
 const platform = process.platform;
 
@@ -28,6 +28,17 @@ function getModId(): string {
     }
   }
   return 'my-mod';
+}
+
+function isCurrentWorkspaceTarget(linkPath: string): boolean {
+  const currentWorkspace = resolve(process.cwd());
+  const desiredTarget = resolve(linkPath);
+
+  if (platform === 'darwin' || platform === 'win32') {
+    return currentWorkspace.toLowerCase() === desiredTarget.toLowerCase();
+  }
+
+  return currentWorkspace === desiredTarget;
 }
 
 function link() {
@@ -60,6 +71,10 @@ function link() {
     if (stats.isSymbolicLink()) {
       console.log(`Removing existing symlink: ${linkPath}`);
       unlinkSync(linkPath);
+    } else if (isCurrentWorkspaceTarget(linkPath)) {
+      console.log(`Workspace already lives at the mod target path: ${linkPath}`);
+      console.log(`Skipping symlink creation. Run 'pnpm build' to refresh dist/.`);
+      return;
     } else {
       console.error(`${linkPath} exists and is not a symlink.`);
       console.error(`Please remove it manually if you want to create a symlink.`);
@@ -98,6 +113,12 @@ function unlink() {
 
   const stats = lstatSync(linkPath);
   if (!stats.isSymbolicLink()) {
+    if (isCurrentWorkspaceTarget(linkPath)) {
+      console.log(`Workspace is the active mods target at: ${linkPath}`);
+      console.log(`No symlink to remove.`);
+      return;
+    }
+
     console.error(`${linkPath} is not a symlink. Not removing.`);
     process.exit(1);
   }
