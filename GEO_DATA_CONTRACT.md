@@ -66,6 +66,9 @@
 
 ### 2. Directory and Stage Contract
 - `data-src/` містить тільки сирі зовнішні джерела: `.osm.pbf`, raw `.geojson`, `.csv`, `.parquet`, metadata про джерело.
+- Для demand pipeline окремо очікуються:
+  - `data-src/open-data/worldpop_ukr_2025_100m.tif`
+  - `data-src/open-data/demand_seed.csv`
 - `build/` містить нормалізовані проміжні артефакти, придатні для повторного ETL: обрізаний extent, нормалізовані дороги, будівлі, аеропортові шари, точки попиту.
 - `generated/` містить game-ready артефакти до сервінгу:
   - `generated/city-data/demand_data.json.gz`
@@ -107,11 +110,13 @@
 - GeoJSON `FeatureCollection` у WGS84.
 - Геометрія: дорожній граф регіону без негеографічних transform-ів; допустимі `LineString` або `MultiLineString`.
 - Кожен feature має `properties` щонайменше з `roadClass`, `structure`, `name`.
-- `roadClass` і `structure` нормалізуються до стабільного словника значень на етапі ETL; сирі OSM-теги напряму в served contract не виносяться.
+- `roadClass` у served contract має бути одним із runtime-підтверджених значень: `highway`, `major`, `medium`, `minor`.
+- `structure` нормалізується до стабільного словника значень на етапі ETL; сирі OSM-теги напряму в served contract не виносяться.
 
 #### `runways_taxiways.geojson.gz`
 - GeoJSON `FeatureCollection` у WGS84.
 - Містить інфраструктуру аеропорту Бориспіль, потрібну для game schema.
+- Runtime schema validation у Subway Builder v1.0.0 очікує `Polygon` geometry для served runway/taxiway features; line-like geometry не є валідною для фінального файла.
 - Формат фіксується як schema-driven: фінальний файл має проходити runtime schema validation без додаткових runtime transform-ів.
 
 #### `tiles`
@@ -121,6 +126,15 @@
 ### 4. Normalized Intermediate Contract
 - Нормалізовані будівлі, дороги, аеропортові шари й точки попиту в `build/` мають уже бути в `EPSG:4326`.
 - Усі normalized entities мають мати стабільні string id.
+- `demand_seed.csv` є канонічним upstream для `build_demand_points.py` і має містити:
+  - `id`
+  - `lon`
+  - `lat`
+  - `jobs`
+  - `residents`
+  - `source_refs`
+  - `cluster_type`
+  - audit-поля: `jobs_raw`, `residents_raw`, `building_jobs`, `poi_jobs`, `landuse_jobs`, `airport_bonus`, `cell_size_m`
 - Для `demand points` required shape:
   - `id`
   - `coords`
@@ -143,7 +157,7 @@
   - `DemandDataSchema`
   - `OptimizedBuildingIndexSchema`
   - `RoadsGeojsonSchema`
-  - runway schema key треба перевіряти проти фактично доступного runtime API, бо в документації й локальних типах є розбіжність імені: `RunwaysTaxiwaysSchema` vs `RunwaysTaxiwaysGeojsonSchema`
+  - `RunwaysTaxiwaysGeojsonSchema`
 
 ## Test Plan
 - Координатний тест: усі normalized/generated/served координати проходять перевірку на `[-180..180, -90..90]` і порядок `[lon, lat]`.
@@ -164,5 +178,5 @@
 - Цей документ є канонічним контрактом геоданих; `plan.md` і `CONTINUITY.md` посилаються на нього.
 - Для v1 лишається локальний HTTP serving на `127.0.0.1`.
 - `demand points` є єдиною базовою одиницею попиту; grid і прямі building-centroid flows не використовуються як канонічний served format.
-- Словник значень для `roadClass` і `structure` буде нормалізований в ETL; сирі OSM values не вважаються фінальним контрактом.
+- Словник значень для `structure` буде нормалізований в ETL; сирі OSM values не вважаються фінальним контрактом.
 - Точний production extent `KYV` ще треба окремо затвердити, але сам формат bbox і CRS вже зафіксований цим контрактом.

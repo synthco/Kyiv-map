@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-04-13T20:00:29.182953+00:00",
+  "sources": {
+    "osm_ukraine_pbf": {
+      "description": "Bulk OSM extract for Ukraine used as the primary geometry source.",
+      "mode": "download",
+      "required": true,
+      "url": "https://download.geofabrik.de/europe/ukraine-latest.osm.pbf",
+      "canonical_path": "/Users/ivantyshchenko/Library/Application Support/metro-maker4/mods/Kyiv-city/data-src/osm/ukraine-latest.osm.pbf",
+      "status": "skipped",
+      "path": "/Users/ivantyshchenko/Library/Application Support/metro-maker4/mods/Kyiv-city/data-src/osm/ukraine-260412.osm.pbf",
+      "exists": true,
+      "size_bytes": 858656907,
+      "sha256": "61bd74c5c767cf0762da8a68f383e31ab32739fe52448c1ba024567a0b0fbb47"
+    },
+    "worldpop_ukr_2025_100m": {
+      "description": "WorldPop Ukraine 2025 population counts raster used to derive residents per demand cell.",
+      "mode": "manual",
+      "required": true,
+      "url": "https://hub.worldpop.org/geodata/summary?id=52378",
+      "canonical_path": "/Users/ivantyshchenko/Library/Application Support/metro-maker4/mods/Kyiv-city/data-src/open-data/worldpop_ukr_2025_100m.tif",
+      "status": "present",
+      "path": "/Users/ivantyshchenko/Library/Application Support/metro-maker4/mods/Kyiv-city/data-src/open-data/worldpop_ukr_2025_100m.tif",
+      "exists": true,
+      "size_bytes": 80595445,
+      "sha256": "bbfca1c4c4bf81f0d6af7dddc39ccc800f6da552faf928aa13593a36a3681421"
+    },
+    "demand_seed_csv": {
+      "description": "Generated clustered demand seed with jobs/residents per cell.",
+      "mode": "manual",
+      "required": false,
+      "url": null,
+      "canonical_path": "/Users/ivantyshchenko/Library/Application Support/metro-maker4/mods/Kyiv-city/data-src/open-data/demand_seed.csv",
+      "status": "pending_manual_source",
+      "path": "/Users/ivantyshchenko/Library/Application Support/metro-maker4/mods/Kyiv-city/data-src/open-data/demand_seed.csv",
+      "exists": false
+    }
+  }
+}
